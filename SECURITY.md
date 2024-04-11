@@ -1,21 +1,22 @@
 # Security Policy
 
-## Supported Versions
+This module is insecure by design. It is intended to be used for demonstrations
+only, and vulnerabilities will not necessarily be fixed.
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+## Supported Versions
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 0.x.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you still wish to discuss a vulnerability in this module, please send an
+email to [andreswebs@pm.me](mailto:andreswebs@pm.me) describing the issue.
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+Response time is usually less than 48 hours.
+
+Your name will be added to the contributors, unless you wish to remain
+anonymous.
+
+Many thanks!
