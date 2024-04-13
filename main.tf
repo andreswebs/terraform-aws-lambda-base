@@ -6,31 +6,32 @@ locals {
   partition  = data.aws_partition.current.partition
   region     = data.aws_region.current.name
   account_id = data.aws_caller_identity.current.account_id
+  dns_suffix = data.aws_partition.current.dns_suffix
 }
 
 locals {
-  log_group_name = "${var.log_group_prefix}/${var.lambda_name}"
+  log_group_name = "${var.log_group_prefix}/${var.name}"
   log_group_arn  = "arn:${local.partition}:logs:${local.region}:${local.account_id}:log-group:${local.log_group_name}:*"
 }
 
-data "aws_iam_policy_document" "lambda_service_trust" {
+data "aws_iam_policy_document" "service_trust" {
   statement {
     actions = ["sts:AssumeRole"]
 
     principals {
       type        = "Service"
-      identifiers = ["lambda.amazonaws.com"]
+      identifiers = ["${var.service}.${local.dns_suffix}"]
     }
   }
 }
 
-resource "aws_iam_role" "lambda_exec" {
-  name                  = var.lambda_name
-  assume_role_policy    = data.aws_iam_policy_document.lambda_service_trust.json
+resource "aws_iam_role" "exec" {
+  name                  = var.name
+  assume_role_policy    = data.aws_iam_policy_document.service_trust.json
   force_detach_policies = true
 }
 
-data "aws_iam_policy_document" "lambda_log_permissions" {
+data "aws_iam_policy_document" "log_permissions" {
 
   statement {
     sid = "logs"
@@ -47,7 +48,8 @@ data "aws_iam_policy_document" "lambda_log_permissions" {
 
 }
 
-data "aws_iam_policy_document" "lambda_vpc_permissions" {
+data "aws_iam_policy_document" "vpc_permissions" {
+  count = var.vpc_permissions_enabled ? 1 : 0
   statement {
     sid = "vpc"
     actions = [
@@ -62,17 +64,17 @@ data "aws_iam_policy_document" "lambda_vpc_permissions" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_permissions" {
-  source_policy_documents = [
-    data.aws_iam_policy_document.lambda_log_permissions.json,
-    data.aws_iam_policy_document.lambda_vpc_permissions.json,
-  ]
+data "aws_iam_policy_document" "service_permissions" {
+  source_policy_documents = compact([
+    data.aws_iam_policy_document.log_permissions.json,
+    var.vpc_permissions_enabled ? data.aws_iam_policy_document.vpc_permissions[0].json : null,
+  ])
 }
 
-resource "aws_iam_role_policy" "lambda_permissions" {
-  name   = "lambda-permissions"
-  role   = aws_iam_role.lambda_exec.id
-  policy = data.aws_iam_policy_document.lambda_permissions.json
+resource "aws_iam_role_policy" "service_permissions" {
+  name   = "service-permissions"
+  role   = aws_iam_role.exec.id
+  policy = data.aws_iam_policy_document.service_permissions.json
 }
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -81,11 +83,11 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 resource "aws_iam_role_policy_attachment" "xray" {
-  role       = aws_iam_role.lambda_exec.id
+  role       = aws_iam_role.exec.id
   policy_arn = "arn:${local.partition}:iam::aws:policy/AWSXrayWriteOnlyAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_lambda_insights" {
-  role       = aws_iam_role.lambda_exec.id
+  role       = aws_iam_role.exec.id
   policy_arn = "arn:${local.partition}:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
 }

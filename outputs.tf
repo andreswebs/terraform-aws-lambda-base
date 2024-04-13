@@ -1,9 +1,9 @@
 output "iam_role" {
-  value       = aws_iam_role.lambda_exec
-  description = "The AWS Lambda IAM Role resource"
+  value       = aws_iam_role.exec
+  description = "The `aws_iam_role` resource"
 }
 
 output "log_group" {
   value       = aws_cloudwatch_log_group.this
-  description = "The AWS CloudWatch log group resource"
+  description = "The `aws_cloudwatch_log_group` resource"
 }

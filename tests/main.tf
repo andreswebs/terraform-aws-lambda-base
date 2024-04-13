@@ -1,4 +1,4 @@
-module "lambda_base_demo" {
-  source      = "../"
-  lambda_name = "module-test-lambda-base"
+module "lambda_base" {
+  source = "../"
+  name   = "module-test-lambda-base"
 }

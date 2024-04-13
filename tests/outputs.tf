@@ -1,7 +1,7 @@
 output "iam_role_arn" {
-  value = module.lambda_base_demo.iam_role.arn
+  value = module.lambda_base.iam_role.arn
 }
 
 output "log_group_name" {
-  value = module.lambda_base_demo.log_group.name
+  value = module.lambda_base.log_group.name
 }
