@@ -12,6 +12,8 @@ locals {
 locals {
   log_group_name = "${var.log_group_prefix}/${var.name}"
   log_group_arn  = "arn:${local.partition}:logs:${local.region}:${local.account_id}:log-group:${local.log_group_name}:*"
+
+  managed_policy_arn_prefix = "arn:${local.partition}:iam::aws:policy"
 }
 
 data "aws_iam_policy_document" "service_trust" {
@@ -25,7 +27,7 @@ data "aws_iam_policy_document" "service_trust" {
   }
 }
 
-resource "aws_iam_role" "exec" {
+resource "aws_iam_role" "this" {
   name                  = var.name
   assume_role_policy    = data.aws_iam_policy_document.service_trust.json
   force_detach_policies = true
@@ -67,13 +69,13 @@ data "aws_iam_policy_document" "vpc_permissions" {
 data "aws_iam_policy_document" "service_permissions" {
   source_policy_documents = compact([
     data.aws_iam_policy_document.log_permissions.json,
-    var.vpc_permissions_enabled ? data.aws_iam_policy_document.vpc_permissions[0].json : null,
+    try(data.aws_iam_policy_document.vpc_permissions[0].json, ""),
   ])
 }
 
 resource "aws_iam_role_policy" "service_permissions" {
   name   = "service-permissions"
-  role   = aws_iam_role.exec.id
+  role   = aws_iam_role.this.id
   policy = data.aws_iam_policy_document.service_permissions.json
 }
 
@@ -82,12 +84,15 @@ resource "aws_cloudwatch_log_group" "this" {
   retention_in_days = var.log_retention_in_days
 }
 
-resource "aws_iam_role_policy_attachment" "xray" {
-  role       = aws_iam_role.exec.id
-  policy_arn = "arn:${local.partition}:iam::aws:policy/AWSXrayWriteOnlyAccess"
+locals {
+  default_policies = [
+    "${local.managed_policy_arn_prefix}/AWSXrayWriteOnlyAccess",
+    "${local.managed_policy_arn_prefix}/CloudWatchLambdaInsightsExecutionRolePolicy",
+  ]
 }
 
-resource "aws_iam_role_policy_attachment" "cloudwatch_lambda_insights" {
-  role       = aws_iam_role.exec.id
-  policy_arn = "arn:${local.partition}:iam::aws:policy/CloudWatchLambdaInsightsExecutionRolePolicy"
+resource "aws_iam_role_policy_attachment" "this" {
+  for_each   = toset(local.default_policies)
+  role       = aws_iam_role.this.id
+  policy_arn = each.value
 }

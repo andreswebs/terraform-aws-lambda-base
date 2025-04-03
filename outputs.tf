@@ -1,5 +1,5 @@
 output "iam_role" {
-  value       = aws_iam_role.exec
+  value       = aws_iam_role.this
   description = "The `aws_iam_role` resource"
 }
 
