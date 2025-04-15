@@ -85,14 +85,17 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 locals {
-  default_policies = [
-    "${local.managed_policy_arn_prefix}/AWSXrayWriteOnlyAccess",
-    "${local.managed_policy_arn_prefix}/CloudWatchLambdaInsightsExecutionRolePolicy",
+
+  default_policy_names = [
+    "AWSXrayWriteOnlyAccess",
+    "CloudWatchLambdaInsightsExecutionRolePolicy",
   ]
+
+  default_policy_arns = { for n in local.default_policy_names : n => "${local.managed_policy_arn_prefix}/${n}" }
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
-  for_each   = toset(local.default_policies)
+  for_each   = local.default_policy_arns
   role       = aws_iam_role.this.id
   policy_arn = each.value
 }
