@@ -100,10 +100,11 @@ module "lambda_base" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_log_group_prefix"></a> [log\_group\_prefix](#input\_log\_group\_prefix) | The log group prefix | `string` | `"/aws/lambda"` | no |
+| <a name="input_log_group_prefix"></a> [log\_group\_prefix](#input\_log\_group\_prefix) | The log group prefix | `string` | `"/aws/lambda/"` | no |
 | <a name="input_log_retention_in_days"></a> [log\_retention\_in\_days](#input\_log\_retention\_in\_days) | The number of days to retain the log events in the log group | `number` | `90` | no |
 | <a name="input_name"></a> [name](#input\_name) | Generic service name, used to name module resources | `string` | n/a | yes |
 | <a name="input_service"></a> [service](#input\_service) | The service principal for the role. Can be 'lambda' or 'states' | `string` | `"lambda"` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | (Optional) Map of tags to apply to created resources | `map(string)` | `{}` | no |
 | <a name="input_vpc_permissions_enabled"></a> [vpc\_permissions\_enabled](#input\_vpc\_permissions\_enabled) | (Optional) Whether to enable VPC permissions for the execution role | `bool` | `false` | no |
 
 ## Modules
